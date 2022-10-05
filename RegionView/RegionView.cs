@@ -310,9 +310,7 @@ namespace RegionView
 			}
 		}
 
-		/// <summary>Removes all region borders from a player's view.</summary>
-		/// <param name="player">The player to reset</param>
-		public void ClearRegions(RegionPlayer player)
+		public static void ClearRegions(RegionPlayer player)
 		{
 			foreach (var region in player.Regions)
 				region.Refresh(player.TSPlayer);
@@ -349,7 +347,7 @@ namespace RegionView
 						//clearRegions(player);
 						break;
 					}
-					if ((e.Action == GetDataHandlers.EditAction.PlaceTile || e.Action == GetDataHandlers.EditAction.PlaceWall) && !this.TileValidityCheck(region, e.X, e.Y, e.Action))
+					if ((e.Action == GetDataHandlers.EditAction.PlaceTile || e.Action == GetDataHandlers.EditAction.PlaceWall) && !TileValidityCheck(region, e.X, e.Y, e.Action))
 					{
 						e.Handled = true;
 						player.TSPlayer.SendData(PacketTypes.TileSendSquare, "", 1, e.X, e.Y, 0, 0);
@@ -362,61 +360,6 @@ namespace RegionView
 				if (e.Handled) 
 					ClearRegions(player);
 			}
-		}
-
-		public bool TileValidityCheck(Region region, int x, int y, GetDataHandlers.EditAction editType)
-		{
-			// Check if there's a wall or another tile next to this tile.
-			if (editType == GetDataHandlers.EditAction.PlaceWall)
-			{
-				if (Main.tile[x, y] != null && Main.tile[x, y].active()) 
-					return true;
-
-				if (Main.tile[x - 1, y] != null && ((Main.tile[x - 1, y].active() && !Main.tileNoAttach[Main.tile[x - 1, y].type]) || Main.tile[x - 1, y].wall > 0)) 
-					return true;
-
-				if (Main.tile[x + 1, y] != null && ((Main.tile[x + 1, y].active() && !Main.tileNoAttach[Main.tile[x + 1, y].type]) || Main.tile[x + 1, y].wall > 0)) 
-					return true;
-
-				if (Main.tile[x, y - 1] != null && ((Main.tile[x, y - 1].active() && !Main.tileNoAttach[Main.tile[x, y - 1].type]) || Main.tile[x, y - 1].wall > 0)) 
-					return true;
-
-				if (Main.tile[x, y + 1] != null && ((Main.tile[x, y + 1].active() && !Main.tileNoAttach[Main.tile[x, y + 1].type]) || Main.tile[x, y + 1].wall > 0)) 
-					return true;
-			}
-			else
-			{
-				if (Main.tile[x, y] != null && Main.tile[x, y].wall > 0) 
-					return true;
-
-				if (Main.tile[x - 1, y] != null && Main.tile[x - 1, y].wall > 0) 
-					return true;
-
-				if (Main.tile[x + 1, y] != null && Main.tile[x + 1, y].wall > 0) 
-					return true;
-
-				if (Main.tile[x, y - 1] != null && Main.tile[x, y - 1].wall > 0) 
-					return true;
-
-				if (Main.tile[x, y + 1] != null && Main.tile[x, y + 1].wall > 0) 
-					return true;
-
-				if (Main.tile[x - 1, y] != null && Main.tile[x - 1, y].active() && !Main.tileNoAttach[Main.tile[x - 1, y].type]) 
-					return true;
-
-				if (Main.tile[x + 1, y] != null && Main.tile[x + 1, y].active() && !Main.tileNoAttach[Main.tile[x + 1, y].type]) 
-					return true;
-
-				if (Main.tile[x, y - 1] != null && Main.tile[x, y - 1].active() && !Main.tileNoAttach[Main.tile[x, y - 1].type]) 
-					return true;
-
-				if (Main.tile[x, y - 1] != null && Main.tile[x, y + 1].active() && !Main.tileNoAttach[Main.tile[x, y + 1].type]) 
-					return true;
-			}
-
-			// Check if this tile is next to a region boundary.
-			return x < region.ShowArea.Left - 1 || x > region.ShowArea.Right + 1 || y < region.ShowArea.Top - 1 || y > region.ShowArea.Bottom + 1 ||
-				x >= region.ShowArea.Left + 2 && x <= region.ShowArea.Right - 2 && y >= region.ShowArea.Top + 2 && y <= region.ShowArea.Bottom - 2;
 		}
 
 		private void OnPlayerJoin(JoinEventArgs e)
@@ -437,48 +380,6 @@ namespace RegionView
 					}
 				}
 		}
-
-		public void GiveTile(RegionPlayer player, GetDataHandlers.TileEditEventArgs e)
-		{
-			var item = new Item(); 
-			var found = false;
-
-			for (var i = 1; i <= Terraria.ID.ItemID.Count; i++)
-			{
-				item.SetDefaults(i, true);
-				if (item.createTile == e.EditData && item.placeStyle == e.Style)
-				{
-					if (item.tileWand != -1) item.SetDefaults(item.tileWand, true);
-					found = true;
-					break;
-				}
-			}
-
-			if (found) 
-				GiveItem(player, item);
-		}
-
-		public void GiveWall(RegionPlayer player, GetDataHandlers.TileEditEventArgs e)
-		{
-			var item = new Item(); var found = false;
-			for (var i = 1; i <= Terraria.ID.ItemID.Count; i++)
-			{
-				item.SetDefaults(i, true);
-				if (item.createWall == e.EditData)
-				{
-					found = true;
-					break;
-				}
-			}
-			if (found)
-			{
-				item.stack = 1;
-				GiveItem(player, item);
-			}
-		}
-
-		public void GiveItem(RegionPlayer player, Item item) 
-			=> player.TSPlayer.GiveItem(item.type, 1);
 
 		private void OnPlayerCommand(PlayerCommandEventArgs e)
 		{
@@ -518,7 +419,7 @@ namespace RegionView
 						else
 						{
 							var newArea = tRegion.Area;
-							if (!region.Command && (!player.IsViewingNearby || !IsPlayerNearby(player.TSPlayer, region.area)))
+							if (!region.Command && (!player.IsViewingNearby || !IsPlayerNearby(player.TSPlayer, region.Area)))
 							{
 								// The player is no longer near the region.
 								refreshFlag = true;
@@ -604,5 +505,102 @@ namespace RegionView
 					playerY >= area.Top - NearRange &&
 					playerY <= area.Bottom + NearRange;
 		}
+
+		public static bool TileValidityCheck(Region region, int x, int y, GetDataHandlers.EditAction editType)
+		{
+			// Check if there's a wall or another tile next to this tile.
+			if (editType == GetDataHandlers.EditAction.PlaceWall)
+			{
+				if (Main.tile[x, y] != null && Main.tile[x, y].active())
+					return true;
+
+				if (Main.tile[x - 1, y] != null && ((Main.tile[x - 1, y].active() && !Main.tileNoAttach[Main.tile[x - 1, y].type]) || Main.tile[x - 1, y].wall > 0))
+					return true;
+
+				if (Main.tile[x + 1, y] != null && ((Main.tile[x + 1, y].active() && !Main.tileNoAttach[Main.tile[x + 1, y].type]) || Main.tile[x + 1, y].wall > 0))
+					return true;
+
+				if (Main.tile[x, y - 1] != null && ((Main.tile[x, y - 1].active() && !Main.tileNoAttach[Main.tile[x, y - 1].type]) || Main.tile[x, y - 1].wall > 0))
+					return true;
+
+				if (Main.tile[x, y + 1] != null && ((Main.tile[x, y + 1].active() && !Main.tileNoAttach[Main.tile[x, y + 1].type]) || Main.tile[x, y + 1].wall > 0))
+					return true;
+			}
+			else
+			{
+				if (Main.tile[x, y] != null && Main.tile[x, y].wall > 0)
+					return true;
+
+				if (Main.tile[x - 1, y] != null && Main.tile[x - 1, y].wall > 0)
+					return true;
+
+				if (Main.tile[x + 1, y] != null && Main.tile[x + 1, y].wall > 0)
+					return true;
+
+				if (Main.tile[x, y - 1] != null && Main.tile[x, y - 1].wall > 0)
+					return true;
+
+				if (Main.tile[x, y + 1] != null && Main.tile[x, y + 1].wall > 0)
+					return true;
+
+				if (Main.tile[x - 1, y] != null && Main.tile[x - 1, y].active() && !Main.tileNoAttach[Main.tile[x - 1, y].type])
+					return true;
+
+				if (Main.tile[x + 1, y] != null && Main.tile[x + 1, y].active() && !Main.tileNoAttach[Main.tile[x + 1, y].type])
+					return true;
+
+				if (Main.tile[x, y - 1] != null && Main.tile[x, y - 1].active() && !Main.tileNoAttach[Main.tile[x, y - 1].type])
+					return true;
+
+				if (Main.tile[x, y - 1] != null && Main.tile[x, y + 1].active() && !Main.tileNoAttach[Main.tile[x, y + 1].type])
+					return true;
+			}
+
+			// Check if this tile is next to a region boundary.
+			return x < region.ShowArea.Left - 1 || x > region.ShowArea.Right + 1 || y < region.ShowArea.Top - 1 || y > region.ShowArea.Bottom + 1 ||
+				x >= region.ShowArea.Left + 2 && x <= region.ShowArea.Right - 2 && y >= region.ShowArea.Top + 2 && y <= region.ShowArea.Bottom - 2;
+		}
+
+		public static void GiveTile(RegionPlayer player, GetDataHandlers.TileEditEventArgs e)
+		{
+			var item = new Item();
+			var found = false;
+
+			for (var i = 1; i <= Terraria.ID.ItemID.Count; i++)
+			{
+				item.SetDefaults(i, true);
+				if (item.createTile == e.EditData && item.placeStyle == e.Style)
+				{
+					if (item.tileWand != -1) item.SetDefaults(item.tileWand, true);
+					found = true;
+					break;
+				}
+			}
+
+			if (found)
+				GiveItem(player, item);
+		}
+
+		public static void GiveWall(RegionPlayer player, GetDataHandlers.TileEditEventArgs e)
+		{
+			var item = new Item(); var found = false;
+			for (var i = 1; i <= Terraria.ID.ItemID.Count; i++)
+			{
+				item.SetDefaults(i, true);
+				if (item.createWall == e.EditData)
+				{
+					found = true;
+					break;
+				}
+			}
+			if (found)
+			{
+				item.stack = 1;
+				GiveItem(player, item);
+			}
+		}
+
+		public static void GiveItem(RegionPlayer player, Item item)
+			=> player.TSPlayer.GiveItem(item.type, 1);
 	}
 }
