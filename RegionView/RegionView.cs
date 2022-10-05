@@ -8,6 +8,7 @@ using TShockAPI.Hooks;
 
 namespace RegionView
 {
+    [ApiVersion(2, 1)]
     public class RegionView : TerrariaPlugin
     {
 		public const int NearRange = 100;
