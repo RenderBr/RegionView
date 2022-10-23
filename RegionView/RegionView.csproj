@@ -8,19 +8,19 @@
 
   <ItemGroup>
     <Reference Include="Auxiliary">
-      <HintPath>..\..\Application\ServerPlugins\Auxiliary.dll</HintPath>
+      <HintPath>J:\Downloads\TShock-Beta-win-x64-Release-4\bin\Auxiliary.dll</HintPath>
     </Reference>
     <Reference Include="ModFramework">
-      <HintPath>..\..\Application\bin\ModFramework.dll</HintPath>
+      <HintPath>J:\Downloads\TShock-Beta-win-x64-Release-4\bin\ModFramework.dll</HintPath>
     </Reference>
     <Reference Include="OTAPI">
-      <HintPath>..\..\Application\bin\OTAPI.dll</HintPath>
+      <HintPath>J:\Downloads\TShock-Beta-win-x64-Release-4\bin\OTAPI.dll</HintPath>
     </Reference>
     <Reference Include="TerrariaServer">
-      <HintPath>..\..\Application\bin\TerrariaServer.dll</HintPath>
+      <HintPath>J:\Downloads\TShock-Beta-win-x64-Release-4\bin\TerrariaServer.dll</HintPath>
     </Reference>
     <Reference Include="TShockAPI">
-      <HintPath>..\..\Application\ServerPlugins\TShockAPI.dll</HintPath>
+      <HintPath>J:\Downloads\TShock-Beta-win-x64-Release-4\ServerPlugins\TShockAPI.dll</HintPath>
     </Reference>
   </ItemGroup>
 
